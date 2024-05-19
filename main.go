@@ -6,7 +6,7 @@ import (
   "os"
 )
 
-const mxN int = 100
+const mxN int = 1000
 
 type Transaction struct {
   Date, Category string
@@ -44,11 +44,11 @@ func write_data(arr *tabUser, n *int) {
     fmt.Println("array and n have been endocoded and written to file")
   }
 
-  func read_data(arr *tabUser, n *int) {
-    file, err := os.Open("user.dat")
-    if err != nil {
-      fmt.Println("Error opening file:", err)
-    }
+func read_data(arr *tabUser, n *int) {
+  file, err := os.Open("user.dat")
+  if err != nil {
+    fmt.Println("Error opening file:", err)
+  }
   defer file.Close()
 
   fileInfo, err := file.Stat()
@@ -75,6 +75,15 @@ func write_data(arr *tabUser, n *int) {
 }
 
 // WRITE-READ FUNCTIONALITY
+
+func delete_data(T *tabUser, n *int, xLoc int) {
+  for i := xLoc; i < *n-1; i++ {
+    T[i] = T[i+1]
+  }
+  *n--
+  write_data(T, n)
+  fmt.Println("This account has been deleted!")
+}
 
 func sequential_search(T *tabUser, n *int, x string) int {
   var found int 
@@ -103,8 +112,7 @@ func login_page(T *tabUser, n *int) {
       validation(T, n)
     case 2: 
       add_new_profile(T, n)
-    case 3: 
-      //account_list()
+    case 3:  
       show_list(T, n)
     default: 
       fmt.Println("error")
@@ -117,23 +125,32 @@ func show_list(tab *tabUser, n *int) {
   }
 }
 
-func user_homepage(tab *tabUser, loc int) {
+func user_homepage(tab *tabUser, n *int, loc int) {
+  var choice int
   fmt.Println("Good Morning", tab[loc].Name)
   fmt.Println("You have", tab[loc].Balance, "balance")
+  fmt.Println("Type 1 to delete this account and 0 to exit")
+  fmt.Scan(&choice)
+  if (choice == 1) {
+    delete_data(tab, n, loc)
+  }
+
 }
 
 func validation(tab *tabUser, n *int) {
   var username, password string
+  var location int
   fmt.Print("Enter the username: ")
   fmt.Scan(&username)
-  if (sequential_search(tab, n, username) != -1) {
+  location = sequential_search(tab, n, username)
+  if (location != -1) {
     fmt.Print("Please enter your password: ")
     fmt.Scan(&password)
-    for (password != tab[sequential_search(tab, n, username)].Password) {
-      fmt.Print("Your password is incorrect, please enter the correct one: ")
+    for (password != tab[location].Password) {
+      fmt.Print("Your password is incorrect, please enter the correct pass: ")
       fmt.Scan(&password)
     }
-    user_homepage(tab, sequential_search(tab, n, username))
+    user_homepage(tab, n, location)
   } else {
     fmt.Println("the user doesn't exist!")
   }
@@ -144,6 +161,10 @@ func add_new_profile(T *tabUser, n *int) {
   location = *n
   fmt.Print("Enter the username: ")
   fmt.Scan(&T[*n].Name)
+  for (sequential_search(T, n, T[*n].Name) != -1) {
+    fmt.Print(T[*n].Name, " already exists! Please find another name: ")
+    fmt.Scan(&T[*n].Name)
+  }
   fmt.Print("Enter a password: ")
   fmt.Scan(&T[*n].Password)
   fmt.Print("Enter the first balance: ")
@@ -155,7 +176,9 @@ func add_new_profile(T *tabUser, n *int) {
   *n++
   write_data(T, n)
   fmt.Println("A new user has been created!")
-  user_homepage(T, location)
+  fmt.Println("Tekan enter untuk melanjutkan")
+  fmt.Scan()
+  user_homepage(T, n, location)
 }
 
 func main() {
