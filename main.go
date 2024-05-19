@@ -16,7 +16,8 @@ type Transaction struct {
 
 type User struct {
   Name, Password string 
-  Balance float64 
+  Balance float64
+  Income, Expense float64
   TotalTransaction int
   TransactionHistory [mxN]Transaction
 }
@@ -102,8 +103,26 @@ func login_page(T *tabUser, n *int) {
   var choice int
   read_data(T, n)
   fmt.Printf(`
-    1 (login into an existing account); 2 (create a new account); 
-    3 (show all valid account)
+  ***********************************************
+  *                                             *
+  *           WELCOME TO MONEYGUARD             *
+  *                                             *
+  ***********************************************
+  *                                             *
+  *         Track your expenses and income      *
+  *          for better financial health        *
+  *                                             *
+  ***********************************************
+  *                 Main Menu                   *
+  ***********************************************
+  *                                             *
+  *  1. Login                                   *
+  *  2. Create a New Profile                    *
+  *  3. Show All My Profiles                    *
+  *                                             *
+  ***********************************************
+  *   Please enter your choice (1-3):           *
+  ***********************************************
     `)
   fmt.Print("Choose an option: ")
   fmt.Scan(&choice)
@@ -123,9 +142,19 @@ func login_page(T *tabUser, n *int) {
 
 func show_list(tab *tabUser, n *int) {
   var choice int
+  fmt.Println(`
+  ***********************************************
+  *              All My Profiles                *
+  ***********************************************
+  `)
   for i := 0; i < *n; i++ {
-    fmt.Println(tab[i].Name, tab[i].Balance, tab[i].TotalTransaction)
+    fmt.Printf("  %v) %s %f %v\n", i+1, tab[i].Name, tab[i].Balance, tab[i].TotalTransaction)
   }
+  fmt.Printf(`
+  ***********************************************
+  *    Type anything to return to Main Menu     *
+  ***********************************************
+    `)
   fmt.Printf(`Tekan tombol apapun untuk kembali: `)
   fmt.Scan(&choice)
 }
@@ -212,8 +241,35 @@ func add_transaction(tab *tabUser, n *int, loc int) {
 
 func user_homepage(tab *tabUser, n *int, loc int) {
   var choice int
-  fmt.Println("Good Morning", tab[loc].Name)
-  fmt.Println("You have", tab[loc].Balance, "in your balance")
+  fmt.Printf(`
+  ***********************************************
+                                               
+              WELCOME BACK, %s!                 
+                                               
+  ***********************************************
+                                               
+         Your Financial Overview at a Glance   
+                                               
+  ***********************************************
+                                               
+     Total Income:        Rp%f,00                
+     Total Expenses:      Rp%f,00               
+     Current Balance:     Rp%f,00               
+                                               
+  ***********************************************
+  *                 Actions                     *
+  ***********************************************
+  *                                             *
+  *  1. Add Income                              *
+  *  2. Add Expense                             *
+  *  3. View Detailed Summary                   *
+  *  4. Edit Profile                            *
+  *  5. Log Out                                 *
+  *                                             *
+  ***********************************************
+  *   Please enter your choice (1-5):           *
+  ***********************************************
+    `, tab[loc].Name, tab[loc].Balance, tab[loc].Balance, tab[loc].Balance)
   fmt.Println(`
     Type 1) to delete this account; 2) to add transaction; 3) show history
     `) 
