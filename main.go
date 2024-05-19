@@ -101,7 +101,10 @@ func sequential_search(T *tabUser, n *int, x string) int {
 func login_page(T *tabUser, n *int) {
   var choice int
   read_data(T, n)
-  fmt.Println("1 (login into an existing account); 2 (create a new account); 3 (show all valid account)")
+  fmt.Printf(`
+    1 (login into an existing account); 2 (create a new account); 
+    3 (show all valid account)
+    `)
   fmt.Print("Choose an option: ")
   fmt.Scan(&choice)
   for (choice > 3 || choice < 1) {
@@ -119,9 +122,12 @@ func login_page(T *tabUser, n *int) {
 }
 
 func show_list(tab *tabUser, n *int) {
+  var choice int
   for i := 0; i < *n; i++ {
     fmt.Println(tab[i].Name, tab[i].Balance, tab[i].TotalTransaction)
   }
+  fmt.Printf(`Tekan tombol apapun untuk kembali: `)
+  fmt.Scan(&choice)
 }
 
 func add_to_history(tab *tabUser, n *int, loc int, transaction_type string) {
@@ -177,6 +183,12 @@ func add_to_history(tab *tabUser, n *int, loc int, transaction_type string) {
   }
 }
 
+func show_history(tab *tabUser, n *int, loc int) {
+  for i := 0; i < tab[loc].TotalTransaction; i++ {
+    fmt.Println(tab[loc].TransactionHistory[i].Amount, tab[loc].TransactionHistory[i].Category, tab[loc].TransactionHistory[i].Status)
+  }
+}
+
 func add_transaction(tab *tabUser, n *int, loc int) {
   var choice int 
   fmt.Printf(`
@@ -201,9 +213,9 @@ func add_transaction(tab *tabUser, n *int, loc int) {
 func user_homepage(tab *tabUser, n *int, loc int) {
   var choice int
   fmt.Println("Good Morning", tab[loc].Name)
-  fmt.Println("You have", tab[loc].Balance, " in your balance")
+  fmt.Println("You have", tab[loc].Balance, "in your balance")
   fmt.Println(`
-    Type 1) to delete this account; 2) to add transaction; 3) exit
+    Type 1) to delete this account; 2) to add transaction; 3) show history
     `) 
 
   fmt.Scan(&choice)
@@ -212,7 +224,9 @@ func user_homepage(tab *tabUser, n *int, loc int) {
   } else if (choice == 2) {
     add_transaction(tab, n, loc)
   } else if (choice == 3) {
-    return 
+    show_history(tab, n, loc)
+  } else {
+    return
   }
 
 }
