@@ -10,13 +10,15 @@ const mxN int = 1000
 
 type Transaction struct {
   Date, Category string
-  Amount float64 
+  Amount float64
+  Status bool // true for income, false for outcome
 }
 
 type User struct {
   Name, Password string 
   Balance float64 
-  Transaction_history [mxN]Transaction
+  TotalTransaction int
+  TransactionHistory [mxN]Transaction
 }
 
 type tabUser [mxN]User
@@ -41,7 +43,7 @@ func write_data(arr *tabUser, n *int) {
     fmt.Println("Error encoding n:", err)
     return
   }
-    fmt.Println("array and n have been endocoded and written to file")
+    //fmt.Println("array and n have been endocoded and written to file")
   }
 
 func read_data(arr *tabUser, n *int) {
@@ -51,12 +53,12 @@ func read_data(arr *tabUser, n *int) {
   }
   defer file.Close()
 
-  fileInfo, err := file.Stat()
+  //fileInfo, err := file.Stat()
 
-  if fileInfo.Size() == 0 {
-    fmt.Println("File is empty, starting with an empty user list.")
-    return
-  }
+  //if fileInfo.Size() == 0 {
+  //  fmt.Println("File is empty, starting with an empty user list.")
+  //  return
+  //}
 
   decoder := gob.NewDecoder(file)
   err = decoder.Decode(arr)
@@ -71,7 +73,7 @@ func read_data(arr *tabUser, n *int) {
     return
   }
 
-  fmt.Println("Decoded array from file")
+  //fmt.Println("Decoded array from file")
 }
 
 // WRITE-READ FUNCTIONALITY
@@ -99,40 +101,118 @@ func sequential_search(T *tabUser, n *int, x string) int {
 func login_page(T *tabUser, n *int) {
   var choice int
   read_data(T, n)
-  fmt.Println("1 (login into an existing account); 2 (create a new account) 3 (show all valid account)")
+  fmt.Println("1 (login into an existing account); 2 (create a new account); 3 (show all valid account)")
   fmt.Print("Choose an option: ")
   fmt.Scan(&choice)
-  for (choice > 3 && choice < 1) {
+  for (choice > 3 || choice < 1) {
     fmt.Print("Please choose a valid number: ")
     fmt.Scan(&choice)
   }
 
-  switch choice {
-    case 1: 
-      validation(T, n)
-    case 2: 
-      add_new_profile(T, n)
-    case 3:  
-      show_list(T, n)
-    default: 
-      fmt.Println("error")
+  if choice == 1 {
+    validation(T, n)
+  } else if choice == 2 {
+    add_new_profile(T, n)
+  } else if choice == 3 {
+    show_list(T, n)
   }
 }
 
 func show_list(tab *tabUser, n *int) {
   for i := 0; i < *n; i++ {
-    fmt.Println(tab[i].Name, tab[i].Balance)
+    fmt.Println(tab[i].Name, tab[i].Balance, tab[i].TotalTransaction)
+  }
+}
+
+func add_to_history(tab *tabUser, n *int, loc int, transaction_type string) {
+  var n_history, choice int
+  var amount float64
+  n_history = tab[loc].TotalTransaction
+  tab[loc].TransactionHistory[n_history].Status = transaction_type == "income"
+  fmt.Printf(`
+    Masukkan jumlah %s: 
+    `, transaction_type)
+
+  fmt.Scan(&amount)
+  for (amount > tab[loc].Balance && transaction_type == "outcome") {
+    fmt.Println(`
+      Maaf saldo Anda tidak mencukupi
+      
+      1) Kembali
+      2) Masukkan nominal kembali
+      `)
+    fmt.Scan(&choice) 
+    if choice == 1 {
+      user_homepage(tab, n, loc)
+    } else if choice == 2 {
+      fmt.Printf(`
+        Masukkan nominal %s
+        `, transaction_type)
+      fmt.Scan(&amount)
+    }
+  }
+  tab[loc].TransactionHistory[n_history].Amount = amount
+  fmt.Printf(`
+    Masukkan tipe %s: 
+    
+    1) Pembayaran 
+    2) lain-lain
+    `, transaction_type)
+  fmt.Scan(&tab[loc].TransactionHistory[n_history].Category) 
+  if tab[loc].TransactionHistory[n_history].Status {
+    tab[loc].Balance += tab[loc].TransactionHistory[n_history].Amount
+  } else {
+    tab[loc].Balance -= tab[loc].TransactionHistory[n_history].Amount
+  }
+  tab[loc].TotalTransaction++
+  fmt.Printf(`
+    Transaksi anda berhasil diproses!
+
+    TEKAN 0 UNTUK KEMBALI
+    `)
+  write_data(tab, n)
+  fmt.Scan(&choice)
+  if choice == 0 {
+    user_homepage(tab, n, loc)
+  }
+}
+
+func add_transaction(tab *tabUser, n *int, loc int) {
+  var choice int 
+  fmt.Printf(`
+    *************************************
+    Halo, %s! 
+    Apa yang Anda ingin lakukan?
+
+    1) Tambah Pemasukan 
+    2) Tambah Pengeluaran 
+    3) Kembali
+    `, tab[loc].Name)
+  fmt.Scan(&choice) 
+  if choice == 1 {
+    add_to_history(tab, n, loc, "income")
+  } else if choice == 2 {
+    add_to_history(tab, n, loc, "outcome")
+  } else if choice == 3 {
+    user_homepage(tab, n, loc)
   }
 }
 
 func user_homepage(tab *tabUser, n *int, loc int) {
   var choice int
   fmt.Println("Good Morning", tab[loc].Name)
-  fmt.Println("You have", tab[loc].Balance, "balance")
-  fmt.Println("Type 1 to delete this account and 0 to exit")
+  fmt.Println("You have", tab[loc].Balance, " in your balance")
+  fmt.Println(`
+    Type 1) to delete this account; 2) to add transaction; 3) exit
+    `) 
+
   fmt.Scan(&choice)
   if (choice == 1) {
     delete_data(tab, n, loc)
+  } else if (choice == 2) {
+    add_transaction(tab, n, loc)
+  } else if (choice == 3) {
+    return 
   }
 
 }
