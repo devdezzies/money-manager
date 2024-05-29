@@ -2,7 +2,6 @@ package main
 import (
   "fmt"
   "encoding/gob"
-  //"io/ioutil"
   "os"
 )
 
@@ -89,12 +88,14 @@ func delete_data(T *tabUser, n *int, xLoc int) {
 }
 
 func sequential_search(T *tabUser, n *int, x string) int {
-  var found int 
+  var found, i int 
+  i = 0
   found = -1
-  for i := 0; i < *n; i++ {
+  for (i < *n && found == -1) {
     if T[i].Name == x {
       found = i
     }
+    i++
   }
   return found
 } 
@@ -124,7 +125,8 @@ func login_page(T *tabUser, n *int) {
   *   Please enter your choice (1-3):           *
   ***********************************************
     `)
-  fmt.Print("Choose an option: ")
+  fmt.Println()
+  fmt.Printf("%2s%s", "", "Choose an option: ")
   fmt.Scan(&choice)
   for (choice > 3 || choice < 1) {
     fmt.Print("Please choose a valid number: ")
@@ -252,72 +254,69 @@ func user_homepage(tab *tabUser, n *int, loc int) {
                                                
   ***********************************************
                                                
-     Total Income:        Rp%f,00                
-     Total Expenses:      Rp%f,00               
-     Current Balance:     Rp%f,00               
+     Total Income:        Rp%.2f                
+     Total Expenses:      Rp%.2f              
+     Current Balance:     Rp%.2f               
                                                
   ***********************************************
   *                 Actions                     *
   ***********************************************
   *                                             *
-  *  1. Add Income                              *
-  *  2. Add Expense                             *
-  *  3. View Detailed Summary                   *
-  *  4. Edit Profile                            *
-  *  5. Log Out                                 *
+  *  1. Add Transaction                         *
+  *  2. View Detailed Summary                   *
+  *  3. Edit Profile                            *
+  *  4. Log Out                                 *
+  *  5. Delete Account                          *
   *                                             *
   ***********************************************
   *   Please enter your choice (1-5):           *
   ***********************************************
     `, tab[loc].Name, tab[loc].Balance, tab[loc].Balance, tab[loc].Balance)
-  fmt.Println(`
-    Type 1) to delete this account; 2) to add transaction; 3) show history
-    `) 
-
   fmt.Scan(&choice)
   if (choice == 1) {
-    delete_data(tab, n, loc)
-  } else if (choice == 2) {
     add_transaction(tab, n, loc)
-  } else if (choice == 3) {
+  } else if (choice == 2) {
     show_history(tab, n, loc)
-  } else {
+  } else if (choice == 3) {
     return
+  } else if (choice == 4) {
+    login_page(tab, n)
+  } else if (choice == 5) { 
+    delete_data(tab, n, loc)
   }
-
 }
 
 func validation(tab *tabUser, n *int) {
   var username, password string
   var location int
-  fmt.Print("Enter the username: ")
+  fmt.Printf("%2s%s", "", "Enter the username: ")
   fmt.Scan(&username)
   location = sequential_search(tab, n, username)
   if (location != -1) {
-    fmt.Print("Please enter your password: ")
+    fmt.Printf("%2s%s", "", "Please enter your password: ")
     fmt.Scan(&password)
     for (password != tab[location].Password) {
-      fmt.Print("Your password is incorrect, please enter the correct pass: ")
+      fmt.Printf("%2s%s", "", "Your password is incorrect, please enter the correct pass: ")
       fmt.Scan(&password)
     }
     user_homepage(tab, n, location)
   } else {
-    fmt.Println("the user doesn't exist!")
+    fmt.Printf("%2s%s", "", "the user doesn't exist!")
   }
 }
 
 func add_new_profile(T *tabUser, n *int) {
   var location int 
   location = *n
-  fmt.Print("Enter the username: ")
+  fmt.Printf("%2s%s", "", "Enter the username: ")
   fmt.Scan(&T[*n].Name)
   for (sequential_search(T, n, T[*n].Name) != -1) {
     fmt.Print(T[*n].Name, " already exists! Please find another name: ")
     fmt.Scan(&T[*n].Name)
   }
-  fmt.Print("Enter a password: ")
+  fmt.Printf("%2s%s", "", "Enter a password: ")
   fmt.Scan(&T[*n].Password)
-  fmt.Print("Enter the first balance: ")
+  fmt.Printf("%2s%s", "", "Enter the first balance: ")
   fmt.Scan(&T[*n].Balance)
   for (T[*n].Balance < 0) {
     fmt.Print("The balance cannot be negative, please enter a valid balance: ")
@@ -325,8 +324,9 @@ func add_new_profile(T *tabUser, n *int) {
   }
   *n++
   write_data(T, n)
-  fmt.Println("A new user has been created!")
-  fmt.Println("Tekan enter untuk melanjutkan")
+  fmt.Println()
+  fmt.Printf("%2s%s\n", "", "A new user has been created!")
+  fmt.Printf("%2s%s", "", "Tekan enter untuk melanjutkan")
   fmt.Scan()
   user_homepage(T, n, location)
 }
