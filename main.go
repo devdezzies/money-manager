@@ -129,7 +129,7 @@ func login_page(T *tabUser, n *int) {
   fmt.Printf("%2s%s", "", "Choose an option: ")
   fmt.Scan(&choice)
   for (choice > 3 || choice < 1) {
-    fmt.Print("Please choose a valid number: ")
+    fmt.Printf("%2s%s", "", "Please choose a valid number: ")
     fmt.Scan(&choice)
   }
 
@@ -157,8 +157,13 @@ func show_list(tab *tabUser, n *int) {
   *    Type anything to return to Main Menu     *
   ***********************************************
     `)
-  fmt.Printf(`Tekan tombol apapun untuk kembali: `)
+  fmt.Printf("Tekan 0 untuk kembali: ")
   fmt.Scan(&choice)
+  for (choice != 0) {
+    fmt.Printf("%4s%s", "","Tekan 0 untuk kembali: ")
+    fmt.Scan(&choice)
+  }
+  login_page(tab, n)
 }
 
 func add_to_history(tab *tabUser, n *int, loc int, transaction_type string) {
@@ -166,10 +171,8 @@ func add_to_history(tab *tabUser, n *int, loc int, transaction_type string) {
   var amount float64
   n_history = tab[loc].TotalTransaction
   tab[loc].TransactionHistory[n_history].Status = transaction_type == "income"
-  fmt.Printf(`
-    Masukkan jumlah %s: 
-    `, transaction_type)
-
+  fmt.Printf("%4s", "")
+  fmt.Printf("Masukkan jumlah %s: ", transaction_type)
   fmt.Scan(&amount)
   for (amount > tab[loc].Balance && transaction_type == "outcome") {
     fmt.Println(`
@@ -202,11 +205,8 @@ func add_to_history(tab *tabUser, n *int, loc int, transaction_type string) {
     tab[loc].Balance -= tab[loc].TransactionHistory[n_history].Amount
   }
   tab[loc].TotalTransaction++
-  fmt.Printf(`
-    Transaksi anda berhasil diproses!
-
-    TEKAN 0 UNTUK KEMBALI
-    `)
+  fmt.Printf("%2s%s", "", "Transaksi anda berhasil diproses!")
+  fmt.Printf("%2s%s", "", "Tekan 0 untuk kembali: ") 
   write_data(tab, n)
   fmt.Scan(&choice)
   if choice == 0 {
@@ -223,14 +223,20 @@ func show_history(tab *tabUser, n *int, loc int) {
 func add_transaction(tab *tabUser, n *int, loc int) {
   var choice int 
   fmt.Printf(`
-    *************************************
-    Halo, %s! 
-    Apa yang Anda ingin lakukan?
-
-    1) Tambah Pemasukan 
-    2) Tambah Pengeluaran 
-    3) Kembali
+  ***********************************************
+                                               
+                    Halo, %s!                  
+           Apa yang Anda ingin lakukan?        
+                                               
+  ***********************************************
+  *                                             *
+  *         1) Tambah Pemasukan                 *
+  *         2) Tambah Pengeluaran               *
+  *         3) Kembali                          *
+  *                                             *
+  ***********************************************
     `, tab[loc].Name)
+  fmt.Printf("Masukkan pilihan: ")
   fmt.Scan(&choice) 
   if choice == 1 {
     add_to_history(tab, n, loc, "income")
@@ -268,10 +274,9 @@ func user_homepage(tab *tabUser, n *int, loc int) {
   *  4. Log Out                                 *
   *  5. Delete Account                          *
   *                                             *
-  ***********************************************
-  *   Please enter your choice (1-5):           *
-  ***********************************************
+  ***********************************************           
     `, tab[loc].Name, tab[loc].Balance, tab[loc].Balance, tab[loc].Balance)
+  fmt.Printf("Please enter your choice (1-5): ")
   fmt.Scan(&choice)
   if (choice == 1) {
     add_transaction(tab, n, loc)
@@ -296,7 +301,7 @@ func validation(tab *tabUser, n *int) {
     fmt.Printf("%2s%s", "", "Please enter your password: ")
     fmt.Scan(&password)
     for (password != tab[location].Password) {
-      fmt.Printf("%2s%s", "", "Your password is incorrect, please enter the correct pass: ")
+      fmt.Printf("%2s%s", "", "Your password is incorrect, please enter the correct pass:")
       fmt.Scan(&password)
     }
     user_homepage(tab, n, location)
@@ -311,7 +316,7 @@ func add_new_profile(T *tabUser, n *int) {
   fmt.Printf("%2s%s", "", "Enter the username: ")
   fmt.Scan(&T[*n].Name)
   for (sequential_search(T, n, T[*n].Name) != -1) {
-    fmt.Print(T[*n].Name, " already exists! Please find another name: ")
+    fmt.Printf("%2s%s%s", "", T[*n].Name, " already exists! Please find another name: ")
     fmt.Scan(&T[*n].Name)
   }
   fmt.Printf("%2s%s", "", "Enter a password: ")
