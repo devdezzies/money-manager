@@ -201,11 +201,13 @@ func add_to_history(tab *tabUser, n *int, loc int, transaction_type string) {
   fmt.Scan(&tab[loc].TransactionHistory[n_history].Category) 
   if tab[loc].TransactionHistory[n_history].Status {
     tab[loc].Balance += tab[loc].TransactionHistory[n_history].Amount
+    tab[loc].Income += tab[loc].TransactionHistory[n_history].Amount
   } else {
     tab[loc].Balance -= tab[loc].TransactionHistory[n_history].Amount
+    tab[loc].Expense += tab[loc].TransactionHistory[n_history].Amount
   }
   tab[loc].TotalTransaction++
-  fmt.Printf("%2s%s", "", "Transaksi anda berhasil diproses!")
+  fmt.Printf("%2s%s\n", "", "Transaksi anda berhasil diproses!")
   fmt.Printf("%2s%s", "", "Tekan 0 untuk kembali: ") 
   write_data(tab, n)
   fmt.Scan(&choice)
@@ -215,9 +217,19 @@ func add_to_history(tab *tabUser, n *int, loc int, transaction_type string) {
 }
 
 func show_history(tab *tabUser, n *int, loc int) {
+  var status string
+  var input int
   for i := 0; i < tab[loc].TotalTransaction; i++ {
-    fmt.Println(tab[loc].TransactionHistory[i].Amount, tab[loc].TransactionHistory[i].Category, tab[loc].TransactionHistory[i].Status)
+    if (tab[loc].TransactionHistory[i].Status) {
+      status = "Pemasukan"
+    } else {
+      status = "Pengeluaran"
+    }
+    fmt.Printf("%2s", "")
+    fmt.Printf("%v). %s sebesar Rp%.f kategori-%s\n", i+1, status, tab[loc].TransactionHistory[i].Amount, tab[loc].TransactionHistory[i].Category)
   }
+  fmt.Printf("%2s%s", "", "Tekan 0 untuk kembali: ")
+  fmt.Scan(&input)
 }
 
 func add_transaction(tab *tabUser, n *int, loc int) {
@@ -275,7 +287,7 @@ func user_homepage(tab *tabUser, n *int, loc int) {
   *  5. Delete Account                          *
   *                                             *
   ***********************************************           
-    `, tab[loc].Name, tab[loc].Balance, tab[loc].Balance, tab[loc].Balance)
+    `, tab[loc].Name, tab[loc].Income, tab[loc].Expense, tab[loc].Balance)
   fmt.Printf("Please enter your choice (1-5): ")
   fmt.Scan(&choice)
   if (choice == 1) {
