@@ -23,6 +23,41 @@ type User struct {
 
 type tabUser [mxN]User
 
+// order by ____
+
+// order by date
+
+// order user by its balance
+func insertion_sort(arr *tabUser, n *int) {
+  var pass, i int
+  var move User
+  for pass = 1; pass < *n; pass++ {
+    move = arr[pass]
+    i = pass
+    for (i > 0 && move.Balance > arr[i-1].Balance) { // ordered ascending
+      arr[i] = arr[i-1]
+      i--
+    }
+    arr[i] = move
+  }
+}
+
+func selection_sort(arr *tabUser, n *int) {
+  var pass, i, move int 
+  var temp User
+  for pass = 1; pass < *n; pass++ {
+    move = pass-1
+    for i = pass; i < *n; i++ {
+      if move < arr[i] { // ascending order
+        move = i
+      }
+    }
+    temp = arr[pass-1]
+    arr[pass-1] = arr[move]
+    arr[move] = temp
+  }
+}
+
 func write_data(arr *tabUser, n *int) {
   file, err := os.Create("user.dat")
   if err != nil {
@@ -43,8 +78,8 @@ func write_data(arr *tabUser, n *int) {
     fmt.Println("Error encoding n:", err)
     return
   }
-    //fmt.Println("array and n have been endocoded and written to file")
-  }
+
+}
 
 func read_data(arr *tabUser, n *int) {
   file, err := os.Open("user.dat")
@@ -52,14 +87,7 @@ func read_data(arr *tabUser, n *int) {
     fmt.Println("Error opening file:", err)
   }
   defer file.Close()
-
-  //fileInfo, err := file.Stat()
-
-  //if fileInfo.Size() == 0 {
-  //  fmt.Println("File is empty, starting with an empty user list.")
-  //  return
-  //}
-
+ 
   decoder := gob.NewDecoder(file)
   err = decoder.Decode(arr)
   if err != nil {
@@ -72,8 +100,6 @@ func read_data(arr *tabUser, n *int) {
     fmt.Println("Error decoding n:", err)
     return
   }
-
-  //fmt.Println("Decoded array from file")
 }
 
 // WRITE-READ FUNCTIONALITY
@@ -84,7 +110,7 @@ func delete_data(T *tabUser, n *int, xLoc int) {
   }
   *n--
   write_data(T, n)
-  fmt.Println("This account has been deleted!")
+  fmt.Printf("%2s%s\n", "", "This account has been deleted!")
 }
 
 func sequential_search(T *tabUser, n *int, x string) int {
@@ -103,6 +129,7 @@ func sequential_search(T *tabUser, n *int, x string) int {
 func login_page(T *tabUser, n *int) {
   var choice int
   read_data(T, n)
+  fmt.Printf("%2s%s\n", "", "LOGIN <-- You're Here!")
   fmt.Printf(`
   ***********************************************
   *                                             *
@@ -144,6 +171,7 @@ func login_page(T *tabUser, n *int) {
 
 func show_list(tab *tabUser, n *int) {
   var choice int
+  fmt.Printf("%2s%s\n", "", "LOGIN << MY SAVINGS <-- You're Here!")
   fmt.Println(`
   ***********************************************
   *              All My Profiles                *
@@ -234,6 +262,7 @@ func show_history(tab *tabUser, n *int, loc int) {
 
 func add_transaction(tab *tabUser, n *int, loc int) {
   var choice int 
+  fmt.Printf("%2s%s\n", "", "LOGIN << DASHBOARD << SAVINGS <-- You're Here!")
   fmt.Printf(`
   ***********************************************
                                                
@@ -261,6 +290,7 @@ func add_transaction(tab *tabUser, n *int, loc int) {
 
 func user_homepage(tab *tabUser, n *int, loc int) {
   var choice int
+  fmt.Printf("%2s%s\n", "", "LOGIN << DASHBOARD")
   fmt.Printf(`
   ***********************************************
                                                
@@ -295,12 +325,19 @@ func user_homepage(tab *tabUser, n *int, loc int) {
   } else if (choice == 2) {
     show_history(tab, n, loc)
   } else if (choice == 3) {
-    return
+    edit_user_profile(tab, n, loc) 
   } else if (choice == 4) {
     login_page(tab, n)
   } else if (choice == 5) { 
     delete_data(tab, n, loc)
   }
+}
+
+func edit_user_profile(tab *tabUser, n *int, loc int) {
+  fmt.Printf("%2s%s\n", "", "LOGIN << DASHBOARD << USER PROFILE << PROFILE EDIT")
+  fmt.Println()
+  fmt.Printf("%2s%s\n", "", "1). USERNAME")
+  fmt.Printf("%2s%s\n", "", "2). PASSWORD")
 }
 
 func validation(tab *tabUser, n *int) {
