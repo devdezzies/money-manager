@@ -11,7 +11,7 @@ const mxN int = 1000
 
 type Transaction struct {
 	Category int
-	Date     string
+	Date     Date
 	Amount   float64
 	Status   bool // true for income, false for outcome
 }
@@ -24,18 +24,26 @@ type User struct {
 	TransactionHistory [mxN]Transaction
 }
 
+type Date struct {
+	Year, Month, Day int
+}
+
 type tabUser [mxN]User
-
-// order by ____
-
-// order by date
-
-// order user by its balance
 
 func clear_screen() {
 	cmd := exec.Command("cmd", "/c", "cls")
 	cmd.Stdout = os.Stdout
 	cmd.Run()
+}
+
+func is_leap_year(year int) bool {
+	if year%4 == 0 {
+		if year%100 == 0 {
+			return year%400 == 0
+		}
+		return true
+	}
+	return false
 }
 
 // func binary_search(arr *tabUser, n *int, x int) {
@@ -46,7 +54,7 @@ func clear_screen() {
 // 	found = -1
 // }
 
-func insertion_sort_ts(arr *tabUser, n *int) {
+func insertion_sort_ts_descending(arr *tabUser, n *int) {
 	/* */
 	var pass, i int
 	var move User
@@ -61,7 +69,22 @@ func insertion_sort_ts(arr *tabUser, n *int) {
 	}
 }
 
-func selection_sort_balance(arr *tabUser, n *int) {
+func insertion_sort_ts_ascending(arr *tabUser, n *int) {
+	/* */
+	var pass, i int
+	var move User
+	for pass = 1; pass < *n; pass++ {
+		move = arr[pass]
+		i = pass
+		for i > 0 && float64(move.TotalTransaction) < float64(arr[i-1].TotalTransaction) { // ordered Descending
+			arr[i] = arr[i-1]
+			i--
+		}
+		arr[i] = move
+	}
+}
+
+func selection_sort_balance_descending(arr *tabUser, n *int) {
 	/* */
 	var pass, i, move int
 	var temp User
@@ -69,6 +92,23 @@ func selection_sort_balance(arr *tabUser, n *int) {
 		move = pass - 1
 		for i = pass; i < *n; i++ {
 			if arr[move].Balance < arr[i].Balance { // Descending order
+				move = i
+			}
+		}
+		temp = arr[pass-1]
+		arr[pass-1] = arr[move]
+		arr[move] = temp
+	}
+}
+
+func selection_sort_balance_ascending(arr *tabUser, n *int) {
+	/* */
+	var pass, i, move int
+	var temp User
+	for pass = 1; pass < *n; pass++ {
+		move = pass - 1
+		for i = pass; i < *n; i++ {
+			if arr[move].Balance > arr[i].Balance { // Descending order
 				move = i
 			}
 		}
@@ -125,6 +165,60 @@ func sequential_search(T *tabUser, n *int, x string) int {
 		i++
 	}
 	return found
+}
+
+func sort_by_date_newest(arr *tabUser, loc int) {
+	var pass, i int
+	var move Transaction
+	for pass = 1; pass < arr[loc].TotalTransaction; pass++ {
+		move = arr[loc].TransactionHistory[pass]
+		i = pass
+		for i > 0 && ((move.Date.Year > arr[loc].TransactionHistory[i-1].Date.Year) || (move.Date.Year == arr[loc].TransactionHistory[i-1].Date.Year && move.Date.Month > arr[loc].TransactionHistory[i-1].Date.Month) || (move.Date.Year == arr[loc].TransactionHistory[i-1].Date.Year && move.Date.Month == arr[loc].TransactionHistory[i-1].Date.Month && move.Date.Day > arr[loc].TransactionHistory[i-1].Date.Day)) {
+			arr[loc].TransactionHistory[i] = arr[loc].TransactionHistory[i-1]
+			i--
+		}
+		arr[loc].TransactionHistory[i] = move
+	}
+}
+
+func sort_by_date_oldest(arr *tabUser, loc int) {
+	var pass, i int
+	var move Transaction
+	for pass = 1; pass < arr[loc].TotalTransaction; pass++ {
+		move = arr[loc].TransactionHistory[pass]
+		i = pass
+		for i > 0 && ((move.Date.Year < arr[loc].TransactionHistory[i-1].Date.Year) || (move.Date.Year == arr[loc].TransactionHistory[i-1].Date.Year && move.Date.Month < arr[loc].TransactionHistory[i-1].Date.Month) || (move.Date.Year == arr[loc].TransactionHistory[i-1].Date.Year && move.Date.Month == arr[loc].TransactionHistory[i-1].Date.Month && move.Date.Day < arr[loc].TransactionHistory[i-1].Date.Day)) {
+			arr[loc].TransactionHistory[i] = arr[loc].TransactionHistory[i-1]
+			i--
+		}
+		arr[loc].TransactionHistory[i] = move
+	}
+}
+
+func is_valid_date(year, month, day int) bool {
+	if year < 1 || month > 12 || month < 1 || day < 1 || day > 31 {
+		return false
+	}
+	if month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12 {
+		if day < 1 || day > 31 {
+			return false
+		}
+	} else if month == 4 || month == 6 || month == 9 || month == 11 {
+		if day < 1 || day > 30 {
+			return false
+		}
+	} else if month == 2 {
+		if is_leap_year(year) {
+			if day < 1 || day > 29 {
+				return false
+			}
+		} else {
+			if day < 1 || day > 28 {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func login_page(T *tabUser, n *int) {
@@ -194,11 +288,33 @@ func show_list(tab *tabUser, n *int) {
 	}
 	switch choice {
 	case 1:
-		selection_sort_balance(tab, n)
+		fmt.Printf("%2s%s", "", "(1) Terurut menaik (2) Terurut menurun: ")
+		fmt.Scan(&choice)
+		for choice > 2 || choice < 1 {
+			fmt.Printf("%2s%s", "", "(1) Terurut menaik (2) Terurut menurun: ")
+			fmt.Scan(&choice)
+		}
+		switch choice {
+		case 1:
+			selection_sort_balance_ascending(tab, n) // ascending
+		case 2:
+			selection_sort_balance_descending(tab, n) // descending
+		}
 		clear_screen()
 		show_list(tab, n)
 	case 2:
-		insertion_sort_ts(tab, n)
+		fmt.Printf("%2s%s", "", "(1) Terurut menaik (2) Terurut menurun: ")
+		fmt.Scan(&choice)
+		for choice > 2 || choice < 1 {
+			fmt.Printf("%2s%s", "", "(1) Terurut menaik (2) Terurut menurun: ")
+			fmt.Scan(&choice)
+		}
+		switch choice {
+		case 1:
+			insertion_sort_ts_ascending(tab, n)
+		case 2:
+			insertion_sort_ts_descending(tab, n)
+		}
 		clear_screen()
 		show_list(tab, n)
 	case 3:
@@ -212,6 +328,7 @@ func add_to_history(tab *tabUser, n *int, loc int, transaction_type string) {
 	/* */
 	var n_history, choice int
 	var amount float64
+	var dd Date
 	n_history = tab[loc].TotalTransaction
 	tab[loc].TransactionHistory[n_history].Status = transaction_type == "income"
 	fmt.Printf("%2s%s%s%s", "", "Masukkan jumlah ", transaction_type, ": ")
@@ -230,6 +347,15 @@ func add_to_history(tab *tabUser, n *int, loc int, transaction_type string) {
 		}
 	}
 	tab[loc].TransactionHistory[n_history].Amount = amount
+	fmt.Printf("%2s%s", "", "Masukkan Tanggal (DD MM YY): ")
+	fmt.Scan(&dd.Day, &dd.Month, &dd.Year)
+	for !(is_valid_date(dd.Year, dd.Month, dd.Day)) {
+		fmt.Printf("%2s%s", "", "Tanggal yang dimasukkan tidak valid! Masukkan Tanggal (DD MM YY): ")
+		fmt.Scan(&dd.Day, &dd.Month, &dd.Year)
+	}
+	tab[loc].TransactionHistory[n_history].Date.Year = dd.Year
+	tab[loc].TransactionHistory[n_history].Date.Month = dd.Month
+	tab[loc].TransactionHistory[n_history].Date.Day = dd.Day
 	if transaction_type == "income" {
 		fmt.Printf("%2s%s%s\n", "", "Masukkan tipe ", transaction_type)
 		fmt.Printf("%2s%s\n", "", "(1) Gaji (2) Pendapatan Lain-Lain")
@@ -327,20 +453,21 @@ func user_homepage(tab *tabUser, n *int, loc int) {
 			if tab[loc].TransactionHistory[i].Status {
 				status = "Pemasukan"
 				fmt.Printf("%2s", "")
-				fmt.Printf("%v). %s sebesar Rp%.f #%s\n", i+1, status, tab[loc].TransactionHistory[i].Amount, tipePemasukan[tab[loc].TransactionHistory[i].Category-1])
+				fmt.Printf("(%v/%v/%v) %s sebesar Rp%.f #%s\n", tab[loc].TransactionHistory[i].Date.Day, tab[loc].TransactionHistory[i].Date.Month, tab[loc].TransactionHistory[i].Date.Year, status, tab[loc].TransactionHistory[i].Amount, tipePemasukan[tab[loc].TransactionHistory[i].Category-1])
 			} else {
 				status = "Pengeluaran"
 				fmt.Printf("%2s", "")
-				fmt.Printf("%v). %s sebesar Rp%.f #%s\n", i+1, status, tab[loc].TransactionHistory[i].Amount, tipePengeluaran[tab[loc].TransactionHistory[i].Category-1])
+				fmt.Printf("(%v/%v/%v) %s sebesar Rp%.f #%s\n", tab[loc].TransactionHistory[i].Date.Day, tab[loc].TransactionHistory[i].Date.Month, tab[loc].TransactionHistory[i].Date.Year, status, tab[loc].TransactionHistory[i].Amount, tipePengeluaran[tab[loc].TransactionHistory[i].Category-1])
 			}
 		}
 	}
 	fmt.Printf("%2s%s\n", "", "===============================================")
-	fmt.Printf("%2s%s\n", "", "Tindakan:                                      ")
+	fmt.Printf("%2s%s\n", "", "Aksi:                                          ")
 	fmt.Printf("%2s%s\n", "", "1). Tambah Catatan Keuangan                    ")
 	fmt.Printf("%2s%s\n", "", "2). Edit Profil Keuangan                       ")
-	fmt.Printf("%2s%s\n", "", "3). Keluar Akun                                ")
-	fmt.Printf("%2s%s\n", "", "4). Hapus Akun                                 ")
+	fmt.Printf("%2s%s\n", "", "3). Urutkan catatan berdasarkan tanggal        ")
+	fmt.Printf("%2s%s\n", "", "4). Keluar Akun                                ")
+	fmt.Printf("%2s%s\n", "", "5). Hapus Akun                                 ")
 	fmt.Printf("%2s%s\n", "", "===============================================")
 	fmt.Printf("%2s%s", "", "→ ")
 	fmt.Scan(&choice)
@@ -355,9 +482,24 @@ func user_homepage(tab *tabUser, n *int, loc int) {
 		clear_screen()
 		edit_user_profile(tab, n, loc)
 	} else if choice == 3 {
+		fmt.Printf("%2s%s", "", "→ (1) Ascending (2) Descending: ")
+		fmt.Scan(&choice)
+		for choice > 2 || choice < 1 {
+			fmt.Printf("%2s%s", "", "Masukkan angka sesuai dengan yang tertera → ")
+			fmt.Scan(&choice)
+		}
+		switch choice {
+		case 1:
+			sort_by_date_newest(tab, loc)
+		case 2:
+			sort_by_date_oldest(tab, loc)
+		}
+		clear_screen()
+		user_homepage(tab, n, loc)
+	} else if choice == 4 {
 		clear_screen()
 		login_page(tab, n)
-	} else if choice == 4 {
+	} else if choice == 5 {
 		delete_data(tab, n, loc)
 	}
 }
@@ -453,8 +595,7 @@ func validation(tab *tabUser, n *int) {
 
 func add_new_profile(T *tabUser, n *int) {
 	/* */
-	var location int
-	location = *n
+	location := *n
 	fmt.Printf("%2s%s", "", "Masukkan nama profil tabungan: ")
 	fmt.Scan(&T[*n].Name)
 	for sequential_search(T, n, T[*n].Name) != -1 {
