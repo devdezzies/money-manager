@@ -167,7 +167,7 @@ func sequential_search(T *tabUser, n *int, x string) int {
 	return found
 }
 
-func sort_by_date_newest(arr *tabUser, loc int) {
+func sort_by_date_newest(arr *tabUser, loc int) { // descending
 	var pass, i int
 	var move Transaction
 	for pass = 1; pass < arr[loc].TotalTransaction; pass++ {
@@ -181,7 +181,7 @@ func sort_by_date_newest(arr *tabUser, loc int) {
 	}
 }
 
-func sort_by_date_oldest(arr *tabUser, loc int) {
+func sort_by_date_oldest(arr *tabUser, loc int) { // ascending
 	var pass, i int
 	var move Transaction
 	for pass = 1; pass < arr[loc].TotalTransaction; pass++ {
@@ -430,6 +430,128 @@ func add_transaction(tab *tabUser, n *int, loc int) {
 	}
 }
 
+func user_homepage_with_filter(tab *tabUser, n *int, loc, tipe int, stat bool) {
+	var choice int
+	var status string
+	tipePengeluaran := [3]string{"Belanja Harian", "Tagihan", "Transportasi"}
+	tipePemasukan := [2]string{"Gaji", "Pendapatan Lain-Lain"}
+	fmt.Printf("%2s%s\n", "", "LOGIN << DASHBOARD                             ")
+	fmt.Printf("%2s%s\n", "", "===============================================")
+	fmt.Printf("%2s%s%s%s\n", "", "Selamat Datang! ", "", tab[loc].Name)
+	fmt.Println()
+	fmt.Printf("%2s%s\n", "", "Berikut adalah laporan keuangan Anda           ")
+	fmt.Printf("%2s%s%s%.2f\n", "", "Total Pemasukan: ", "Rp", tab[loc].Income)
+	fmt.Printf("%2s%s%s%.2f\n", "", "Total Pengeluaran: ", "Rp", tab[loc].Expense)
+	fmt.Printf("%2s%s%s%.2f\n", "", "Total Saldo: ", "Rp", tab[loc].Balance)
+	fmt.Printf("%2s%s\n", "", "===============================================")
+	if tab[loc].TotalTransaction == 0 {
+		fmt.Printf("%2s%s\n", "", "Belum Ada Aktivitas!                       ")
+	} else {
+		fmt.Printf("%2s%s\n", "", "Daftar Aktivitas:                          ")
+		for i := 0; i < tab[loc].TotalTransaction; i++ {
+			if tab[loc].TransactionHistory[i].Status == stat && tab[loc].TransactionHistory[i].Category == tipe {
+				if tab[loc].TransactionHistory[i].Status {
+					status = "Pemasukan"
+					fmt.Printf("%2s", "")
+					fmt.Printf("(%v/%v/%v) %s sebesar Rp%.f #%s\n", tab[loc].TransactionHistory[i].Date.Day, tab[loc].TransactionHistory[i].Date.Month, tab[loc].TransactionHistory[i].Date.Year, status, tab[loc].TransactionHistory[i].Amount, tipePemasukan[tab[loc].TransactionHistory[i].Category-1])
+				} else {
+					status = "Pengeluaran"
+					fmt.Printf("%2s", "")
+					fmt.Printf("(%v/%v/%v) %s sebesar Rp%.f #%s\n", tab[loc].TransactionHistory[i].Date.Day, tab[loc].TransactionHistory[i].Date.Month, tab[loc].TransactionHistory[i].Date.Year, status, tab[loc].TransactionHistory[i].Amount, tipePengeluaran[tab[loc].TransactionHistory[i].Category-1])
+				}
+			}
+		}
+	}
+	fmt.Printf("%2s%s\n", "", "===============================================")
+	fmt.Printf("%2s%s\n", "", "Aksi:                                          ")
+	fmt.Printf("%2s%s\n", "", "1). Tambah Catatan Keuangan                    ")
+	fmt.Printf("%2s%s\n", "", "2). Edit Profil Keuangan                       ")
+	fmt.Printf("%2s%s\n", "", "3). Urutkan catatan berdasarkan tanggal        ")
+	fmt.Printf("%2s%s\n", "", "4). Filter catatan                             ")
+	fmt.Printf("%2s%s\n", "", "5). Hapus Filter                               ")
+	fmt.Printf("%2s%s\n", "", "6). Keluar Akun                                ")
+	fmt.Printf("%2s%s\n", "", "7). Hapus Akun                                 ")
+	fmt.Printf("%2s%s\n", "", "===============================================")
+	fmt.Printf("%2s%s", "", "→ ")
+	fmt.Scan(&choice)
+	for choice > 7 || choice < 1 {
+		fmt.Printf("%2s%s", "", "Masukkan angka sesuai dengan yang tertera → ")
+		fmt.Scan(&choice)
+	}
+	if choice == 1 {
+		clear_screen()
+		add_transaction(tab, n, loc)
+	} else if choice == 2 {
+		clear_screen()
+		edit_user_profile(tab, n, loc)
+	} else if choice == 3 {
+		fmt.Printf("%2s%s", "", "→ (1) Terbaru → Terlama (2) Terlama → terbaru: ")
+		fmt.Scan(&choice)
+		for choice > 2 || choice < 1 {
+			fmt.Printf("%2s%s", "", "Masukkan angka sesuai dengan yang tertera → ")
+			fmt.Scan(&choice)
+		}
+		switch choice {
+		case 1:
+			sort_by_date_newest(tab, loc)
+		case 2:
+			sort_by_date_oldest(tab, loc)
+		}
+		clear_screen()
+		user_homepage(tab, n, loc)
+	} else if choice == 4 {
+		fmt.Printf("%2s%s", "", "→ Filter berdasarkan (1) Pemasukan (2) Pengeluaran: ")
+		fmt.Scan(&choice)
+		for choice > 2 || choice < 1 {
+			fmt.Printf("%2s%s", "", "→ Filter berdasarkan (1) Pemasukan (2) Pengeluaran: ")
+			fmt.Scan(&choice)
+		}
+		switch choice {
+		case 1:
+			fmt.Printf("%2s%s", "", "→ Filter berdasarkan (1) Gaji (2) Pemasukan lain: ")
+			fmt.Scan(&choice)
+			for choice > 2 || choice < 1 {
+				fmt.Printf("%2s%s", "", "→ Filter berdasarkan (1) Gaji (2) Pemasukan lain: ")
+				fmt.Scan(&choice)
+			}
+			switch choice {
+			case 1:
+				clear_screen()
+				user_homepage_with_filter(tab, n, loc, choice, true)
+			case 2:
+				clear_screen()
+				user_homepage_with_filter(tab, n, loc, choice, true)
+			}
+		case 2:
+			fmt.Printf("%2s%s", "", "→ Filter berdasarkan (1) Belanja (2) Transportasi (3) Tagihan: ")
+			fmt.Scan(&choice)
+			for choice > 3 || choice < 1 {
+				fmt.Printf("%2s%s", "", "→ Filter berdasarkan (1) Belanja (2) Transportasi (3) Tagihan: ")
+				fmt.Scan(&choice)
+			}
+			switch choice {
+			case 1:
+				clear_screen()
+				user_homepage_with_filter(tab, n, loc, choice, false)
+			case 2:
+				clear_screen()
+				user_homepage_with_filter(tab, n, loc, choice, false)
+			case 3:
+				clear_screen()
+				user_homepage_with_filter(tab, n, loc, choice, false)
+			}
+		}
+	} else if choice == 5 {
+		clear_screen()
+		user_homepage(tab, n, loc)
+	} else if choice == 6 {
+		clear_screen()
+		login_page(tab, n)
+	} else if choice == 7 {
+		delete_data(tab, n, loc)
+	}
+}
+
 func user_homepage(tab *tabUser, n *int, loc int) {
 	/* */
 	var choice int
@@ -466,12 +588,13 @@ func user_homepage(tab *tabUser, n *int, loc int) {
 	fmt.Printf("%2s%s\n", "", "1). Tambah Catatan Keuangan                    ")
 	fmt.Printf("%2s%s\n", "", "2). Edit Profil Keuangan                       ")
 	fmt.Printf("%2s%s\n", "", "3). Urutkan catatan berdasarkan tanggal        ")
-	fmt.Printf("%2s%s\n", "", "4). Keluar Akun                                ")
-	fmt.Printf("%2s%s\n", "", "5). Hapus Akun                                 ")
+	fmt.Printf("%2s%s\n", "", "4). Filter catatan                             ")
+	fmt.Printf("%2s%s\n", "", "5). Keluar Akun                                ")
+	fmt.Printf("%2s%s\n", "", "6). Hapus Akun                                 ")
 	fmt.Printf("%2s%s\n", "", "===============================================")
 	fmt.Printf("%2s%s", "", "→ ")
 	fmt.Scan(&choice)
-	for choice > 4 || choice < 1 {
+	for choice > 6 || choice < 1 {
 		fmt.Printf("%2s%s", "", "Masukkan angka sesuai dengan yang tertera → ")
 		fmt.Scan(&choice)
 	}
@@ -482,7 +605,7 @@ func user_homepage(tab *tabUser, n *int, loc int) {
 		clear_screen()
 		edit_user_profile(tab, n, loc)
 	} else if choice == 3 {
-		fmt.Printf("%2s%s", "", "→ (1) Ascending (2) Descending: ")
+		fmt.Printf("%2s%s", "", "→ (1) Terbaru → Terlama (2) Terlama → terbaru: ")
 		fmt.Scan(&choice)
 		for choice > 2 || choice < 1 {
 			fmt.Printf("%2s%s", "", "Masukkan angka sesuai dengan yang tertera → ")
@@ -497,9 +620,51 @@ func user_homepage(tab *tabUser, n *int, loc int) {
 		clear_screen()
 		user_homepage(tab, n, loc)
 	} else if choice == 4 {
+		fmt.Printf("%2s%s", "", "→ Filter berdasarkan (1) Pemasukan (2) Pengeluaran: ")
+		fmt.Scan(&choice)
+		for choice > 2 || choice < 1 {
+			fmt.Printf("%2s%s", "", "→ Filter berdasarkan (1) Pemasukan (2) Pengeluaran: ")
+			fmt.Scan(&choice)
+		}
+		switch choice {
+		case 1:
+			fmt.Printf("%2s%s", "", "→ Filter berdasarkan (1) Gaji (2) Pemasukan lain: ")
+			fmt.Scan(&choice)
+			for choice > 2 || choice < 1 {
+				fmt.Printf("%2s%s", "", "→ Filter berdasarkan (1) Gaji (2) Pemasukan lain: ")
+				fmt.Scan(&choice)
+			}
+			switch choice {
+			case 1:
+				clear_screen()
+				user_homepage_with_filter(tab, n, loc, choice, true)
+			case 2:
+				clear_screen()
+				user_homepage_with_filter(tab, n, loc, choice, true)
+			}
+		case 2:
+			fmt.Printf("%2s%s", "", "→ Filter berdasarkan (1) Belanja (2) Transportasi (3) Tagihan: ")
+			fmt.Scan(&choice)
+			for choice > 3 || choice < 1 {
+				fmt.Printf("%2s%s", "", "→ Filter berdasarkan (1) Belanja (2) Transportasi (3) Tagihan: ")
+				fmt.Scan(&choice)
+			}
+			switch choice {
+			case 1:
+				clear_screen()
+				user_homepage_with_filter(tab, n, loc, choice, false)
+			case 2:
+				clear_screen()
+				user_homepage_with_filter(tab, n, loc, choice, false)
+			case 3:
+				clear_screen()
+				user_homepage_with_filter(tab, n, loc, choice, false)
+			}
+		}
+	} else if choice == 5 {
 		clear_screen()
 		login_page(tab, n)
-	} else if choice == 5 {
+	} else if choice == 6 {
 		delete_data(tab, n, loc)
 	}
 }
