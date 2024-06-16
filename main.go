@@ -31,12 +31,14 @@ type Date struct {
 type tabUser [mxN]User
 
 func clear_screen() {
+	//fungsi untuk menghilangkan output sebelumnya dari terminal
 	cmd := exec.Command("cmd", "/c", "cls")
 	cmd.Stdout = os.Stdout
 	cmd.Run()
 }
 
 func is_leap_year(year int) bool {
+	//pengecekan variabel year dengan output true jika merupakan tahun kabisat dan false jika bukan
 	if year%4 == 0 {
 		if year%100 == 0 {
 			return year%400 == 0
@@ -46,16 +48,59 @@ func is_leap_year(year int) bool {
 	return false
 }
 
-// func binary_search(arr *tabUser, n *int, x int) {
-// 	var left, mid, right, found int
-// 	left = 0
-// 	right = *n-1
-// 	mid = (left + right) / 2
-// 	found = -1
-// }
+func binary_search(arr *tabUser, n *int, x string) int {
+	//fungsi binary search untuk mencari x dalam arr dengan ouput indeks x
+	var left, mid, right int
+	left = 0
+	right = *n - 1
+	for left <= right {
+		mid = (left + right) / 2
+		if (*arr)[mid].Name < x {
+			left = mid + 1
+		} else if (*arr)[mid].Name > x {
+			right = mid - 1
+		} else {
+			return mid
+		}
+	}
+	return -1
+}
+
+func show_list_dua(tab *tabUser, n *int, x string) {
+	/*I.S tersedia array tab sebanyak n data dan x data yang dicari
+	F.S tampilan dasboard dan hasil saldo yang dimiliki x*/
+	var a, choice int
+	fmt.Printf("%2s%s\n", "", "===============================================")
+	fmt.Printf("%2s%s\n", "", "LOGIN << PENCARIAN                             ")
+	fmt.Printf("%2s%s\n", "", "===============================================")
+	fmt.Printf("%2s%s\n", "", "Sisa Saldo akun                                ")
+	if *n == 0 {
+		fmt.Printf("%2s%s\n", "", "Belum Ada Akun yang Terdaftar!             ")
+	} else {
+		a = binary_search(tab, n, x)
+	}
+	if a != -1 {
+		fmt.Printf("  %s - Rp%.2f\n", tab[a].Name, tab[a].Balance)
+	} else {
+		fmt.Printf("%2s%s\n", "", "Data tidak ditemukan!                     ")
+	}
+	fmt.Printf("%2s%s\n", "", "===============================================")
+	fmt.Printf("%2s%s", "", "Tekan (0) untuk kembali: ")
+	fmt.Scan(&choice)
+	for choice > 1 || choice < 0 {
+		fmt.Printf("%2s%s", "", "Tekan (0) untuk kembali:")
+		fmt.Scan(&choice)
+	}
+	switch choice {
+	case 0:
+		clear_screen()
+		login_page(tab, n)
+	}
+}
 
 func insertion_sort_ts_descending(arr *tabUser, n *int) {
-	/* */
+	/*I.S berisi array arr dengan banyaknya n data
+	F.S mengurutkan data berdasarkan total transaksi secara descending dengan metode insertion sort */
 	var pass, i int
 	var move User
 	for pass = 1; pass < *n; pass++ {
@@ -70,7 +115,8 @@ func insertion_sort_ts_descending(arr *tabUser, n *int) {
 }
 
 func insertion_sort_ts_ascending(arr *tabUser, n *int) {
-	/* */
+	/*I.S berisi array arr dengan banyaknya n data
+	F.S mengurutkan data berdasarkan total transaksi secara ascending dengan insertion sort */
 	var pass, i int
 	var move User
 	for pass = 1; pass < *n; pass++ {
@@ -85,7 +131,8 @@ func insertion_sort_ts_ascending(arr *tabUser, n *int) {
 }
 
 func selection_sort_balance_descending(arr *tabUser, n *int) {
-	/* */
+	/*I.S berisi array arr dengan banyaknya n data
+	F.S mengurutkan data berdasarkan balance secara descending dengan metode selection sort */
 	var pass, i, move int
 	var temp User
 	for pass = 1; pass < *n; pass++ {
@@ -102,7 +149,8 @@ func selection_sort_balance_descending(arr *tabUser, n *int) {
 }
 
 func selection_sort_balance_ascending(arr *tabUser, n *int) {
-	/* */
+	/*I.S berisi array arr dengan banyaknya n data
+	F.S mengurutkan data berdasarkan balance secara ascending dengan metode selection sort */
 	var pass, i, move int
 	var temp User
 	for pass = 1; pass < *n; pass++ {
@@ -119,8 +167,8 @@ func selection_sort_balance_ascending(arr *tabUser, n *int) {
 }
 
 func write_data(arr *tabUser, n *int) {
-	/*I.S
-	  F.S */
+	/*I.S berisi array arr berisi n data
+	F.S membaca data user kedari file user.dat */
 	file, _ := os.Create("user.dat")
 	defer file.Close()
 
@@ -131,7 +179,8 @@ func write_data(arr *tabUser, n *int) {
 }
 
 func read_data(arr *tabUser, n *int) {
-	/* */
+	/*I.S berisi array arr berisi n data
+	F.S membaca data user kedari file user.dat */
 	file, _ := os.Open("user.dat")
 	defer file.Close()
 	decoder := gob.NewDecoder(file)
@@ -142,7 +191,8 @@ func read_data(arr *tabUser, n *int) {
 // WRITE-READ FUNCTIONALITY
 
 func delete_data(T *tabUser, n *int, xLoc int) {
-	/* */
+	/*I.S berisi array T dengan banyaknya n data dan xloc sebagai data yang akan dihapus
+	F.S array baru T dengan xloc yang telah dihapus */
 	for i := xLoc; i < *n-1; i++ {
 		T[i] = T[i+1]
 	}
@@ -150,11 +200,12 @@ func delete_data(T *tabUser, n *int, xLoc int) {
 	write_data(T, n)
 	fmt.Printf("%2s%s\n", "", "Akun ini berhasil dihapus!")
 	clear_screen()
-	user_homepage(T, n, xLoc)
+	//user_homepage(T, n, xLoc)
+	login_page(T, n)
 }
 
 func sequential_search(T *tabUser, n *int, x string) int {
-	/* */
+	/*Tersedia array T dengan banyaknya n data, dicari data x didalam T dan output berupa indeks x */
 	var found, i int
 	i = 0
 	found = -1
@@ -168,6 +219,8 @@ func sequential_search(T *tabUser, n *int, x string) int {
 }
 
 func sort_by_date_newest(arr *tabUser, loc int) { // descending
+	/*I.S tersedia array arr
+	F.S tampilan data terurut berdasarkan tanggal,bulan,tahun secara descending dengan metode insertion sort*/
 	var pass, i int
 	var move Transaction
 	for pass = 1; pass < arr[loc].TotalTransaction; pass++ {
@@ -182,6 +235,8 @@ func sort_by_date_newest(arr *tabUser, loc int) { // descending
 }
 
 func sort_by_date_oldest(arr *tabUser, loc int) { // ascending
+	/*I.S tersedia array arr
+	F.S tampilan data terurut berdasarkan tanggal,bulan,tahun secara ascending dengan metode insertion sort*/
 	var pass, i int
 	var move Transaction
 	for pass = 1; pass < arr[loc].TotalTransaction; pass++ {
@@ -196,6 +251,7 @@ func sort_by_date_oldest(arr *tabUser, loc int) { // ascending
 }
 
 func is_valid_date(year, month, day int) bool {
+	//Pengecekan tahun, bulan, dan hari, true jika tahun,bulan,hari valid dan false jika tidak valid
 	if year < 1 || month > 12 || month < 1 || day < 1 || day > 31 {
 		return false
 	}
@@ -222,8 +278,10 @@ func is_valid_date(year, month, day int) bool {
 }
 
 func login_page(T *tabUser, n *int) {
-	/* */
+	/*I.S tersedia array T berisi n data
+	F.S tampilan halaman log in */
 	var choice int
+	var x string
 	read_data(T, n)
 	fmt.Printf("%2s%s\n", "", "===============================================")
 	fmt.Printf("%2s%s\n", "", "      SELAMAT DATANG DI APLIKASI KEUANGAN      ")
@@ -234,7 +292,8 @@ func login_page(T *tabUser, n *int) {
 	fmt.Printf("%2s%s\n", "", "1). Login (tabungan yang sudah terdaftar)      ")
 	fmt.Printf("%2s%s\n", "", "2). Buat Profil Tabungan Baru                  ")
 	fmt.Printf("%2s%s\n", "", "3). Perlihatkan Semua Tabungan yang Terdaftar  ")
-	fmt.Printf("%2s%s\n", "", "4). Keluar                                     ")
+	fmt.Printf("%2s%s\n", "", "4). Cari akun terdaftar                        ")
+	fmt.Printf("%2s%s\n", "", "5). Keluar                                     ")
 	fmt.Printf("%2s%s\n", "", "===============================================")
 	fmt.Printf("%2s%s\n", "", "Made by:                                       ")
 	fmt.Printf("%2s%s\n", "", "(1) Abdullah - 103012330146                    ")
@@ -242,7 +301,7 @@ func login_page(T *tabUser, n *int) {
 	fmt.Printf("%2s%s\n", "", "===============================================")
 	fmt.Printf("%2s%s", "", "Masukkan pilihan: ")
 	fmt.Scan(&choice)
-	for choice > 4 || choice < 1 {
+	for choice > 5 || choice < 1 {
 		fmt.Printf("%2s%s", "", "Masukkan angka sesuai dengan yang tertera → ")
 		fmt.Scan(&choice)
 	}
@@ -257,12 +316,19 @@ func login_page(T *tabUser, n *int) {
 		clear_screen()
 		show_list(T, n)
 	} else if choice == 4 {
+		clear_screen()
+		fmt.Printf("%2s%s", "", "Masukkan username: ")
+		fmt.Scan(&x)
+		clear_screen()
+		show_list_dua(T, n, x)
+	} else if choice == 5 {
 		return
 	}
 }
 
 func show_list(tab *tabUser, n *int) {
-	/* */
+	/*I.S tersedia array tab sebanyak n data
+	F.S tampilan dasboard untuk pengurutan akun secara desceding/asceding*/
 	var choice int
 	fmt.Printf("%2s%s\n", "", "===============================================")
 	fmt.Printf("%2s%s\n", "", "LOGIN << Daftar Tabungan                       ")
@@ -325,7 +391,8 @@ func show_list(tab *tabUser, n *int) {
 }
 
 func add_to_history(tab *tabUser, n *int, loc int, transaction_type string) {
-	/* */
+	/*I.S tersedia array tab berisi n data dengan loc sebagai penunjuk data didalam array yang akan diolah
+	F.S tampilan dasboard tabungan income dan outcome dengan proses inputan nominal yang telah dimasukkan dalam database*/
 	var n_history, choice int
 	var amount float64
 	var dd Date
@@ -361,7 +428,7 @@ func add_to_history(tab *tabUser, n *int, loc int, transaction_type string) {
 		fmt.Printf("%2s%s\n", "", "(1) Gaji (2) Pendapatan Lain-Lain")
 		fmt.Printf("%2s%s", "", "→ ")
 		fmt.Scan(&tab[loc].TransactionHistory[n_history].Category)
-		for tab[loc].TransactionHistory[n_history].Category > 2 && tab[loc].TransactionHistory[n_history].Category < 1 {
+		for tab[loc].TransactionHistory[n_history].Category > 2 || tab[loc].TransactionHistory[n_history].Category < 1 {
 			fmt.Printf("%2s%s", "", "Masukkan angka sesuai dengan yang tertera → ")
 			fmt.Scan(&tab[loc].TransactionHistory[n_history].Category)
 		}
@@ -370,7 +437,7 @@ func add_to_history(tab *tabUser, n *int, loc int, transaction_type string) {
 		fmt.Printf("%2s%s\n", "", "(1) Belanja Harian (2) Transportasi (3) Tagihan")
 		fmt.Printf("%2s%s", "", "→ ")
 		fmt.Scan(&tab[loc].TransactionHistory[n_history].Category)
-		for tab[loc].TransactionHistory[n_history].Category > 3 && tab[loc].TransactionHistory[n_history].Category < 1 {
+		for tab[loc].TransactionHistory[n_history].Category > 3 || tab[loc].TransactionHistory[n_history].Category < 1 {
 			fmt.Printf("%2s%s", "", "Masukkan angka sesuai dengan yang tertera → ")
 			fmt.Scan(&tab[loc].TransactionHistory[n_history].Category)
 		}
@@ -402,7 +469,8 @@ func add_to_history(tab *tabUser, n *int, loc int, transaction_type string) {
 }
 
 func add_transaction(tab *tabUser, n *int, loc int) {
-	/* */
+	/*I.S tersedia tab sebagai array berisi n data dengan loc sebagai pilihan data di array yang akan ditampilkan
+	F.S output tampilan dasboard tabungan */
 	var choice int
 	fmt.Printf("%2s%s\n", "", "LOGIN << DASHBOARD << TABUNGAN")
 	fmt.Printf("%2s%s\n", "", "===============================================")
@@ -431,6 +499,8 @@ func add_transaction(tab *tabUser, n *int, loc int) {
 }
 
 func user_homepage_with_filter(tab *tabUser, n *int, loc, tipe int, stat bool) {
+	/*I.S tersedia tab sebagai array dengan banyaknya n data, loc seb
+	F.S output berupa tampilan dasboard dengan filter tampilan yang ditampilkan berdasarkan pilihan di inputan*/
 	var choice int
 	var status string
 	tipePengeluaran := [3]string{"Belanja Harian", "Tagihan", "Transportasi"}
@@ -553,7 +623,8 @@ func user_homepage_with_filter(tab *tabUser, n *int, loc, tipe int, stat bool) {
 }
 
 func user_homepage(tab *tabUser, n *int, loc int) {
-	/* */
+	/*I.S tersedia array tab berisi n data dengan variabel loc sebagai inputan user
+	F.S output berupa tampilan dasboard aplikasi*/
 	var choice int
 	var status string
 	tipePengeluaran := [3]string{"Belanja Harian", "Tagihan", "Transportasi"}
@@ -670,7 +741,8 @@ func user_homepage(tab *tabUser, n *int, loc int) {
 }
 
 func edit_user_profile(tab *tabUser, n *int, loc int) {
-	/* */
+	/*I.S tersedia array T berisi n data, inputan digunakan untuk mengubah data
+	F.S array T baru berisi data baru yang telah diubah berdasarkan inputan*/
 	var choice int
 	var temp string
 	fmt.Printf("%2s%s\n", "", "LOGIN << DASHBOARD << EDIT PROFIL")
@@ -723,7 +795,8 @@ func edit_user_profile(tab *tabUser, n *int, loc int) {
 }
 
 func validation(tab *tabUser, n *int) {
-	/* */
+	/*I.S tersedia array T berisi n data dengan inputan log in akun
+	F.S menvalidasi apakah akun telah terdaftar atau tidak dengan fila database yang telah dibuat*/
 	var username, password string
 	var location, choice int
 	fmt.Printf("%2s%s", "", "Masukkan nama profil tabungan: ")
@@ -759,7 +832,8 @@ func validation(tab *tabUser, n *int) {
 }
 
 func add_new_profile(T *tabUser, n *int) {
-	/* */
+	/*I.S tersedia T berisi n data dan akan menerima inputan data akun baru
+	F.S array T yang telah terisi data akun baru yang telah diinput*/
 	location := *n
 	fmt.Printf("%2s%s", "", "Masukkan nama profil tabungan: ")
 	fmt.Scan(&T[*n].Name)
@@ -784,6 +858,7 @@ func add_new_profile(T *tabUser, n *int) {
 }
 
 func main() {
+	// fungsi utama
 	var t_user tabUser
 	var n int
 	login_page(&t_user, &n)
